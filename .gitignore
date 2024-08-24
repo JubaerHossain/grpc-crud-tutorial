@@ -1,0 +1,6 @@
+server.pid
+storage
+tmp
+bin
+.env
+vendor
