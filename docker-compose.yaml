@@ -1,0 +1,113 @@
+services:
+  grpc_crud_postgres_db:
+    image: postgres:latest
+    container_name: grpc_crud_postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: grpc_crud
+      DB_HOST: grpc_crud_postgres_db
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./create.sql:/docker-entrypoint-initdb.d/create.sql
+    networks:
+      - grpc_crud_network
+    command: -p 5432
+  
+  grpc_crud_redis:
+    image: redis/redis-stack:latest
+    container_name: grpc_crud_redis_container
+    restart: always
+    ports:
+      - "6390:6390" # Redis default port
+      - "8010:8001"
+    volumes:
+      - redis_data:/data
+    command: redis-server --port 6390 --requirepass password
+    networks:
+      - grpc_crud_network
+
+  grpc_crud_app:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    container_name: grpc_crud
+    restart: always
+    ports:
+      - "3060:3060"
+    env_file:
+      - .env
+    depends_on:
+      - grpc_crud_postgres_db
+      - grpc_crud_redis
+    environment:
+      DB_HOST: grpc_crud_postgres_db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: grpc_crud
+    networks:
+      - grpc_crud_network
+
+  pgadmin:
+    container_name: grpc_crud_pgadmin_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pgadmin.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    ports:
+      - "5052:80"
+    depends_on:
+      - grpc_crud_postgres_db
+    networks:
+      - grpc_crud_network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - grpc_crud_network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3061:3000"  # Map Grafana's internal port 3000 to external port 3061
+    networks:
+      - grpc_crud_network
+    depends_on:
+      - prometheus
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    restart: always
+    ports:
+      - "9100:9100"  # Node Exporter default port
+    networks:
+      - grpc_crud_network
+
+networks:
+  grpc_crud_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:

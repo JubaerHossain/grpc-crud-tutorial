@@ -1,0 +1,19 @@
+.env
+bin
+config.yaml
+
+/cmd
+/domain
+/migrations
+/seeds
+dev.env
+docker-compose.yml
+/docker
+prod.env
+/docs
+/domain
+docker-compose.yml
+server.pid
+# release
+.DS_Store
+vendor
