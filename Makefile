@@ -13,6 +13,9 @@ install:
 swag:
 	swag init -g ./cmd/main.go -o docs
 
+grpc:
+	go run cmd/grpc/main.go
+	
 dev:
 	go run cmd/main.go
 
