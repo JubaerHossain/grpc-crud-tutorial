@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/JubaerHossain/rootx/pkg/core/app"
+	"google.golang.org/grpc"
 	"log"
 	"net"
 	"net/http"
@@ -10,8 +12,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/JubaerHossain/rootx/pkg/core/app"
 )
 
 func main() {
